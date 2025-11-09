@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seller Product List</title>
+  <link rel="stylesheet" href="product.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #240046, #3c096c);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+    }
+
+    .back {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background-color: #7b2cbf;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .container {
+      position: relative;
+      background: linear-gradient(145deg, #3b0a68, #4b00a8);
+      width: 95%;
+      max-width: 1100px;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 0 30px rgba(157, 78, 221, 0.5);
+      overflow-x: auto;
+      margin-top: 80px;
+      transition: 0.3s;
+    }
+
+    /* Blur when popup opens */
+    .blur {
+      filter: blur(4px);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      min-width: 700px;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      word-wrap: break-word;
+    }
+
+    th {
+      background-color: #5f0f40;
+      font-size: 1.1rem;
+    }
+
+    tr:nth-child(even) {
+      background-color: #480ca8;
+    }
+
+    tr:nth-child(odd) {
+      background-color: #560bad;
+    }
+
+    tr:hover {
+      background-color: #7b2cbf;
+      transition: 0.3s;
+    }
+
+    td img {
+      width: 65px;
+      height: 65px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 2px solid #fff;
+    }
+
+    .edit-btn, .delete-btn {
+      padding: 7px 14px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .edit-btn {
+      background-color: #ffb703;
+      color: #000;
+    }
+
+    .delete-btn {
+      background-color: #d00000;
+      color: #fff;
+    }
+
+    /* Floating Add Button */
+    .add-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: linear-gradient(135deg, #8e2de2, #4a00e0);
+      color: #fff;
+      font-size: 1.8rem;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(147, 51, 234, 0.6);
+      transition: all 0.3s ease;
+      z-index: 999;
+    }
+
+    .add-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #c77dff;
+    }
+
+    /* Popup Overlay */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(32, 0, 70, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .popup.active {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* Popup Box */
+    .popup-content {
+      background: linear-gradient(145deg, #5a189a, #7b2cbf);
+      padding: 25px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      color: white;
+      box-shadow: 0 0 25px rgba(157, 78, 221, 0.6);
+      animation: popupScale 0.4s ease forwards;
+    }
+
+    .popup-content h2 {
+      margin-bottom: 15px;
+    }
+
+    .popup-content input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .popup-content img {
+      width: 100px;
+      height: 100px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 2px solid #fff;
+    }
+
+    .popup-content button {
+      margin: 10px 5px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #saveBtn {
+      background-color: #06d6a0;
+      color: #000;
+    }
+
+    .popup-content button:last-child {
+      background-color: #ef476f;
+      color: white;
+    }
+
+    @keyframes popupScale {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      th, td {
+        padding: 8px 6px;
+        font-size: 0.9rem;
+      }
+
+      .add-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.3rem;
+        bottom: 20px;
+        right: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="back" onclick="goBack()">&#8592;</button>
+
+  <div class="container" id="mainContainer">
+    <button class="add-btn" onclick="openPopup()">+</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Image</th>
+          <th>Product</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="productTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Popup Form -->
+  <div class="popup" id="popupForm">
+    <div class="popup-content">
+      <h2 id="popupTitle">Add Product</h2>
+      <input type="text" id="name" placeholder="Product Name" />
+      <input type="text" id="category" placeholder="Category" />
+      <input type="number" id="price" placeholder="Price" />
+      <input type="number" id="stock" placeholder="Stock" />
+      <input type="file" id="imageUpload" accept="image/*" onchange="previewImage(event)" />
+      <img id="preview" src="" alt="Preview" style="display:none;" />
+      <button id="saveBtn" onclick="addOrUpdateProduct()">Save</button>
+      <button onclick="closePopup()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    let products = JSON.parse(localStorage.getItem("products")) || [
+      { id: 1, name: "Smart Watch", category: "Gadgets", price: 2999, stock: 10, image: "https://via.placeholder.com/70" },
+      { id: 2, name: "Wireless Earbuds", category: "Accessories", price: 1999, stock: 15, image: "https://via.placeholder.com/70" }
+    ];
+
+    const productTableBody = document.getElementById("productTableBody");
+    const preview = document.getElementById("preview");
+    const popup = document.getElementById("popupForm");
+    const popupTitle = document.getElementById("popupTitle");
+    const container = document.getElementById("mainContainer");
+    let imageBase64 = "";
+    let editIndex = -1;
+
+    function renderProducts() {
+      productTableBody.innerHTML = "";
+      products.forEach((product, index) => {
+        const row = `<tr>
+          <td>#${product.id}</td>
+          <td><img src="${product.image}" alt="${product.name}"></td>
+          <td>${product.name}</td>
+          <td>${product.category}</td>
+          <td>₹${product.price}</td>
+          <td>${product.stock}</td>
+          <td>
+            <button class="edit-btn" onclick="openEdit(${index})">Edit</button>
+            <button class="delete-btn" onclick="deleteProduct(${index})">Delete</button>
+          </td>
+        </tr>`;
+        productTableBody.innerHTML += row;
+      });
+      localStorage.setItem("products", JSON.stringify(products));
+    }
+
+    function openPopup() {
+      popup.classList.add("active");
+      container.classList.add("blur");
+      popupTitle.textContent = "Add Product";
+      document.getElementById("saveBtn").textContent = "Add";
+      clearForm();
+      editIndex = -1;
+    }
+
+    function openEdit(index) {
+      popup.classList.add("active");
+      container.classList.add("blur");
+      popupTitle.textContent = "Edit Product";
+      document.getElementById("saveBtn").textContent = "Update";
+
+      const product = products[index];
+      document.getElementById("name").value = product.name;
+      document.getElementById("category").value = product.category;
+      document.getElementById("price").value = product.price;
+      document.getElementById("stock").value = product.stock;
+      preview.src = product.image;
+      preview.style.display = "block";
+      imageBase64 = product.image;
+      editIndex = index;
+    }
+
+    function closePopup() {
+      popup.classList.remove("active");
+      container.classList.remove("blur");
+      clearForm();
+    }
+
+    function clearForm() {
+      document.getElementById("name").value = "";
+      document.getElementById("category").value = "";
+      document.getElementById("price").value = "";
+      document.getElementById("stock").value = "";
+      document.getElementById("imageUpload").value = "";
+      preview.src = "";
+      preview.style.display = "none";
+      imageBase64 = "";
+    }
+
+    function previewImage(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function () {
+        imageBase64 = reader.result;
+        preview.src = imageBase64;
+        preview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addOrUpdateProduct() {
+      const name = document.getElementById("name").value.trim();
+      const category = document.getElementById("category").value.trim();
+      const price = document.getElementById("price").value;
+      const stock = document.getElementById("stock").value;
+
+      if (!name || !category || !price || !stock || !imageBase64) {
+        alert("Please fill all fields and upload image!");
+        return;
+      }
+
+      const newProduct = {
+        id: editIndex === -1 ? products.length + 1 : products[editIndex].id,
+        name,
+        category,
+        price: parseInt(price),
+        stock: parseInt(stock),
+        image: imageBase64
+      };
+
+      if (editIndex === -1) {
+        products.push(newProduct);
+      } else {
+        products[editIndex] = newProduct;
+      }
+
+      renderProducts();
+      closePopup();
+    }
+
+    function deleteProduct(index) {
+      if (confirm("Are you sure to delete this product?")) {
+        products.splice(index, 1);
+        renderProducts();
+      }
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+
+    renderProducts();
+  </script>
+</body>
+</html>
